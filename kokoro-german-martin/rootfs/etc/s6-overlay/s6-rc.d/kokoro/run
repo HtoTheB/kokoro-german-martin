@@ -1,0 +1,52 @@
+#!/command/with-contenv bashio
+# vim: ft=bash
+# shellcheck shell=bash
+# ==============================================================================
+# Start the Kokoro ONNX TTS service (FastAPI on 127.0.0.1:8881)
+# ==============================================================================
+
+readonly workers="$(bashio::config 'workers')"
+readonly intra_op="$(bashio::config 'intra_op_threads')"
+readonly inter_op="$(bashio::config 'inter_op_threads')"
+readonly speed="$(bashio::config 'speed')"
+readonly pause="$(bashio::config 'pause_duration')"
+readonly execution_mode="$(bashio::config 'execution_mode')"
+readonly graph_opt="$(bashio::config 'graph_opt')"
+readonly allow_spinning="$(bashio::config 'allow_spinning')"
+
+# KOKORO_ONNX_ALLOW_SPINNING expects 0/1
+spinning=0
+if bashio::config.true 'allow_spinning'; then
+    spinning=1
+fi
+
+# Main.py reads the legacy KOKORO_ONNX_THREADS name for the BLAS thread caps.
+export KOKORO_WORKERS="${workers}"
+export KOKORO_ONNX_INTRA_OP_THREADS="${intra_op}"
+export KOKORO_ONNX_THREADS="${intra_op}"
+export KOKORO_ONNX_INTER_OP_THREADS="${inter_op}"
+export KOKORO_ONNX_EXECUTION_MODE="${execution_mode}"
+export KOKORO_ONNX_GRAPH_OPT="${graph_opt}"
+export KOKORO_ONNX_ALLOW_SPINNING="${spinning}"
+export KOKORO_ONNX_SPEED="${speed}"
+export KOKORO_PAUSE_DURATION="${pause}"
+export KOKORO_WARMUP_TEXT="Hallo."
+
+# BLAS/OpenMP caps, applied inside forked workers as well.
+export OMP_NUM_THREADS="${intra_op}"
+export OPENBLAS_NUM_THREADS="${intra_op}"
+export MKL_NUM_THREADS="${intra_op}"
+export NUMEXPR_NUM_THREADS="${intra_op}"
+export OMP_WAIT_POLICY=PASSIVE
+
+bashio::log.info \
+    "Starting Kokoro ONNX: workers=${workers} intra=${intra_op} inter=${inter_op} speed=${speed}"
+
+# Single uvicorn process; parallel synthesis happens in the process pool
+# inside main.py (fork-based, so it must not be combined with --workers).
+exec python3 -m uvicorn main:app \
+    --app-dir /app \
+    --host 127.0.0.1 \
+    --port 8881 \
+    --loop uvloop \
+    --http httptools

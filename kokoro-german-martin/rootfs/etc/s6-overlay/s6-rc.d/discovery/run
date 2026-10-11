@@ -1,0 +1,27 @@
+#!/command/with-contenv bashio
+# vim: ft=bash
+# shellcheck shell=bash
+# ==============================================================================
+# Send Wyoming discovery information to Home Assistant so the TTS voice is
+# registered automatically (same mechanism as the official Piper app).
+# ==============================================================================
+
+declare config
+
+# Wait for the Wyoming bridge to accept connections.
+bash -c \
+    "until
+        echo '{ \"type\": \"describe\" }'
+            > /dev/tcp/127.0.0.1/10203; do sleep 1;
+    done" > /dev/null 2>&1 || true;
+
+config=$(\
+    bashio::var.json \
+        uri "tcp://$(hostname):10203" \
+)
+
+if bashio::discovery "wyoming" "${config}" > /dev/null; then
+    bashio::log.info "Successfully sent discovery information to Home Assistant."
+else
+    bashio::log.error "Discovery message to Home Assistant failed!"
+fi

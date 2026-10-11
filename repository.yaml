@@ -1,0 +1,4 @@
+# https://developers.home-assistant.io/docs/apps/repository#repository-configuration
+name: "Kokoro German (Martin) — Home Assistant app"
+url: "https://github.com/HtoTheB/kokoro-german-martin"
+maintainer: "HtoTheB"

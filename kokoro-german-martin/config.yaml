@@ -1,0 +1,39 @@
+# https://developers.home-assistant.io/docs/apps/configuration#app-configuration
+name: "Kokoro German (Martin)"
+version: "1.2"
+slug: kokoro-german-martin
+description: >-
+  German TTS for Home Assistant Assist. Home Assistant app packaging of the
+  upstream Kokoro-82M ONNX "Martin" voice (Godelaune on Hugging Face) — the
+  model, voice, normalization and Wyoming bridge are all upstream work; this
+  app only bundles them for HAOS.
+url: "https://huggingface.co/Godelaune/Kokoro-82M-ONNX-German-Martin"
+arch:
+  - aarch64
+  - amd64
+init: false
+discovery:
+  - wyoming
+options:
+  workers: 1
+  intra_op_threads: 2
+  inter_op_threads: 1
+  speed: 1.125
+  pause_duration: 0.25
+  execution_mode: sequential
+  graph_opt: all
+  allow_spinning: false
+  concurrent_requests: 3
+schema:
+  workers: "int(1,4)"
+  intra_op_threads: "int(1,8)"
+  inter_op_threads: "int(1,4)"
+  speed: "float(0.5,2.0)"
+  pause_duration: "float(0,1.0)"
+  execution_mode: list(sequential|parallel)
+  graph_opt: list(disable|basic|extended|all)
+  allow_spinning: bool
+  concurrent_requests: "int(1,10)"
+ports:
+  "10203/tcp": null
+homeassistant: 2025.1.0

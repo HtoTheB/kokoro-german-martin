@@ -1,0 +1,29 @@
+#!/command/with-contenv bashio
+# vim: ft=bash
+# shellcheck shell=bash
+# ==============================================================================
+# Start the Wyoming OpenAI bridge (tcp://0.0.0.0:10203) pointing at the
+# local Kokoro ONNX service.
+# ==============================================================================
+
+readonly concurrent="$(bashio::config 'concurrent_requests')"
+export WYOMING_TTS_CONCURRENT_REQUESTS="${concurrent}"
+
+# Wait for the Kokoro service to accept connections on its loopback port.
+bashio::log.info "Waiting for Kokoro ONNX on 127.0.0.1:8881..."
+bash -c \
+    "for i in \$(seq 1 600); do
+        if (echo > /dev/tcp/127.0.0.1/8881) 2>/dev/null; then
+            exit 0
+        fi
+        sleep 1
+     done" || bashio::exit.nok "Kokoro ONNX did not come up on 127.0.0.1:8881"
+bashio::log.info "Kokoro ONNX is up, starting Wyoming bridge."
+
+exec python3 -m wyoming_openai \
+    --uri 'tcp://0.0.0.0:10203' \
+    --languages de \
+    --tts-openai-url 'http://127.0.0.1:8881/v1' \
+    --tts-models kokoro \
+    --tts-streaming-models kokoro \
+    --tts-backend KOKORO_FASTAPI

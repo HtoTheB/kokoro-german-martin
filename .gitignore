@@ -1,0 +1,20 @@
+# Research / working notes — deliberately kept out of the public repo
+FINDINGS.md
+
+# Model artifacts are baked into the Docker image at build time.
+# They must never be committed (they are hundreds of MB).
+*.onnx
+*.npz
+*.mp3
+*.wav
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp

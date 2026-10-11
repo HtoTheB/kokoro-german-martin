@@ -1,0 +1,80 @@
+Kokoro German (Martin) — Home Assistant app
+Copyright 2026 HtoTheB
+
+============================================================
+Attribution
+============================================================
+This repository contains ONLY packaging files (a Dockerfile, s6 service
+definitions, a Home Assistant app manifest, and a few glue scripts) that
+wrap existing, independently developed components into a single Home
+Assistant app.
+
+HtoTheB did not create the TTS model, the voice, the ONNX conversion, the
+synthesis service, the German text normalization, the Wyoming bridge, or
+the German sentence-separator patch. All of that is the work of the
+upstream projects listed below. This app exists to make running that
+upstream work on Home Assistant Operating System (HAOS) a one-click
+installation.
+
+If you have questions about the model, the voice, or the synthesis,
+contact the upstream authors, not the maintainer of this packaging repo.
+
+------------------------------------------------------------
+The upstream projects this app packages
+------------------------------------------------------------
+
+1. Kokoro-82M ONNX German "Martin" — TTS service, German text normalization,
+   German sentence-separator patch, and Docker setup.
+   Author / original work: Godelaune (huggingFresse)
+   Model:   https://huggingface.co/Godelaune/Kokoro-82M-ONNX-German-Martin
+   Code:    https://github.com/Godelaune/Kokoro-82M-ONNX-German-Martin
+   License: Apache-2.0
+   Upstream files used: onnx-docker/main.py, onnx-docker/tts_normalizer.py,
+   german_text_rules.py,
+   wyoming_openai_german_separator/apply_german_separator_patch.py
+   (used unmodified, as published). They are NOT committed to this repo: the
+   Dockerfile fetches them from the upstream GitHub repository at build time,
+   pinned to an exact commit and verified by SHA-256 checksum. Only their
+   placement inside the app image differs from upstream — no changes to
+   synthesis or normalization logic.
+
+2. German "Martin" voice model (fine-tune) and base model:
+   kikiri-tts/kikiri-german-martin
+       https://huggingface.co/kikiri-tts/kikiri-german-martin
+   dida-80b/kokoro-german-hui-multispeaker-base
+       https://huggingface.co/dida-80b/kokoro-german-hui-multispeaker-base
+   hexgrad/Kokoro-82M (architecture)
+       https://huggingface.co/hexgrad/Kokoro-82M
+   License: Apache-2.0
+   The model weights (kokoro-martin.onnx, voices-martin.npz) are NOT
+   committed to this repo. They are downloaded from the Hugging Face model
+   page (item 1) during the Docker image build.
+
+3. kokoro-onnx — Kokoro ONNX runtime (installed from PyPI at build time):
+   Copyright (c) 2025 github.com/thewh1teagle
+   https://github.com/thewh1teagle/kokoro-onnx
+   License: MIT
+
+4. wyoming_openai — Wyoming OpenAI bridge (installed from PyPI at build time):
+   https://github.com/roryeckel/wyoming_openai
+   License: Apache-2.0
+   Change made by upstream (not by this repo): a build-time patch
+   (apply_german_separator_patch.py from item 1, Apache-2.0, fetched from
+   upstream at build time) is applied to wyoming_openai/handler.py to
+   protect German dotted abbreviations during streaming sentence
+   segmentation and to make the TTS request concurrency configurable via
+   WYOMING_TTS_CONCURRENT_REQUESTS.
+
+5. wyoming — Wyoming protocol library (transitive dependency):
+   Copyright (c) Rhasspy, 2022
+   https://github.com/OHF-Voice/wyoming
+   License: MIT
+
+6. Transitive dependencies installed at build time (each keeps its own
+   upstream license): fastapi (MIT), uvicorn (BSD-3), numpy (BSD-3),
+   onnxruntime (MIT), openai (Apache-2.0).
+
+7. Home Assistant base image (ghcr.io/home-assistant/base-debian:trixie):
+   Copyright (c) 2014-2026 The Home Assistant Authors
+   https://www.home-assistant.io/
+   License: Apache-2.0

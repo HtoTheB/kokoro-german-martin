@@ -1,0 +1,39 @@
+configuration:
+  workers:
+    name: Parallel synthesis workers
+    description: >-
+      Number of process-isolated Kokoro workers kept warm for parallel
+      sentence synthesis. Set to 1 on memory-constrained systems.
+  intra_op_threads:
+    name: ONNX intra-op threads
+    description: >-
+      ONNX Runtime intra-op threads per worker (recommended: number of
+      physical CPU cores per worker, typically 2).
+  inter_op_threads:
+    name: ONNX inter-op threads
+    description: ONNX Runtime inter-op threads per worker (1 is usually enough).
+  speed:
+    name: Speaking speed
+    description: Speech speed multiplier (1.0 = natural, higher = faster).
+  pause_duration:
+    name: Sentence pause
+    description: Silence in seconds inserted between sentences.
+  execution_mode:
+    name: ONNX execution mode
+    description: Sequential (default, safest) or parallel ONNX execution.
+  graph_opt:
+    name: ONNX graph optimization
+    description: Graph optimization level applied when loading the model.
+  allow_spinning:
+    name: Allow thread spinning
+    description: >-
+      Let ONNX worker threads spin while waiting. Can reduce latency but
+      increases CPU usage; disable (default) on shared systems.
+  concurrent_requests:
+    name: Wyoming concurrent TTS requests
+    description: >-
+      Number of concurrent OpenAI TTS requests the Wyoming bridge may
+      stream (3 is the upstream default).
+
+network:
+  10203/tcp: "Wyoming TTS port (used by Home Assistant, no need to change)"
